@@ -120,29 +120,32 @@ WORKDIR /opt/etherpad/
 # Install node dependencies
 RUN /opt/etherpad/bin/installDeps.sh
 
-RUN sed -e 's/dbType\" : \"dirty/dbType\" : \"cassandra/g' settings.json
-RUN sed -e 's/"filename" : "var\/dirty.db"/"clientOptions": {"keyspace": "etherpad", "contactPoints": ["localhost"]},"columnFamily": "Etherpad"/g' settings.json
-RUN sed -e 's/defaultPadText" : ".*"/defaultPadText" : ""/g' settings.json
-RUN echo "13SirapH8t3kxUh5T5aqWXhXahMzoZRA" > APIKEY.txt
-RUN echo "Insert this key in config.json: 13SirapH8t3kxUh5T5aqWXhXahMzoZRA"
+# Next two lines are production config ONLY
+# RUN sed -i -e 's/dbType\" : \"dirty/dbType\" : \"cassandra/g' settings.json
+# RUN sed -i -e 's/"filename" : "var\/dirty.db"/"clientOptions": {"keyspace": "etherpad", "contactPoints": ["localhost"]},"columnFamily": "Etherpad"/g' settings.json
 
-# ep headings
+RUN sed -i -e 's/defaultPadText" : ".*"/defaultPadText" : ""/g' settings.json
+RUN echo "13SirapH8t3kxUh5T5aqWXhXahMzoZRA" > APIKEY.txt
+
+# Install ep_headings module
 RUN cd /opt/etherpad && npm install ep_headings
 
 # Etherpad OAE plugin
 RUN cd /opt/etherpad/node_modules && git clone https://github.com/oaeproject/ep_oae && cd ep_oae && npm install
-RUN sed -e '/defaultPadText/a \
-  "ep_oae": {"mq": { "host": "127.0.0.1", "port": 5672 } },' settings.json
+
+# Not strictly necessary if we're using default IP and port
+# RUN sed -i -e '/defaultPadText/a \
+    # "ep_oae": {"mq": { "host": "127.0.0.1", "port": 5672 } },' settings.json
 
 # CSS changes
 RUN cd /opt/etherpad && rm node_modules/ep_headings/templates/editbarButtons.ejs && cp node_modules/ep_oae/static/templates/editbarButtons.ejs node_modules/ep_headings/templates/editbarButtons.ejs
 RUN cd /opt/etherpad/ && rm src/static/custom/pad.css && cp node_modules/ep_oae/static/css/pad.css src/static/custom/pad.css
 
-# socket transport protocols
-RUN sed -e 's/\["xhr-polling", "jsonp-polling", "htmlfile"\],/\["websocket", "xhr-polling", "jsonp-polling", "htmlfile"\],/g' settings.json
+# Edit protocols in config
+RUN sed -i -e 's/\["xhr-polling", "jsonp-polling", "htmlfile"\],/\["websocket", "xhr-polling", "jsonp-polling", "htmlfile"\],/g' settings.json
 
-# TODO toolbar sed
-RUN sed -e '/"loadTest/a \
+# Edit toolbar in config
+RUN sed -i -e '/"loadTest/a \
 "toolbar": {"left": [["bold", "italic", "underline", "strikethrough", "orderedlist", "unorderedlist", "indent", "outdent"]],"right": [["showusers"]]},' settings.json
 
 EXPOSE 9001
@@ -150,4 +153,6 @@ EXPOSE 9001
 RUN groupadd --gid 1001 etherpad && useradd --uid 1001 --gid etherpad --shell /bin/bash --create-home etherpad
 
 CMD ["bin/run.sh", "--root"]
+
+# TODO try to run this as non-root if possible
 # CMD ["su", "-", "etherpad", "-c", "/bin/sh /opt/etherpad/bin/run.sh"]
