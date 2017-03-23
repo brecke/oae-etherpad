@@ -134,8 +134,8 @@ RUN cd /opt/etherpad && npm install ep_headings
 RUN cd /opt/etherpad/node_modules && git clone https://github.com/oaeproject/ep_oae && cd ep_oae && npm install
 
 # Not strictly necessary if we're using default IP and port
-# RUN sed -i -e '/defaultPadText/a \
-    # "ep_oae": {"mq": { "host": "127.0.0.1", "port": 5672 } },' settings.json
+RUN sed -i -e '/defaultPadText/a \
+    "ep_oae": {"mq": { "host": "oae-rabbitmq", "port": 5672 } },' settings.json
 
 # CSS changes
 RUN cd /opt/etherpad && rm node_modules/ep_headings/templates/editbarButtons.ejs && cp node_modules/ep_oae/static/templates/editbarButtons.ejs node_modules/ep_headings/templates/editbarButtons.ejs
