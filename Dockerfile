@@ -61,6 +61,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 		libyaml-dev \
 		make \
 		patch \
+    python-pip \
 		xz-utils \
 		zlib1g-dev \
 	&& rm -rf /var/lib/apt/lists/*
@@ -121,11 +122,15 @@ WORKDIR /opt/etherpad/
 RUN /opt/etherpad/bin/installDeps.sh
 
 # Next two lines are production config ONLY
-# RUN sed -i -e 's/dbType\" : \"dirty/dbType\" : \"cassandra/g' settings.json
-# RUN sed -i -e 's/"filename" : "var\/dirty.db"/"clientOptions": {"keyspace": "etherpad", "contactPoints": ["localhost"]},"columnFamily": "Etherpad"/g' settings.json
+RUN sed -i -e 's/dbType\" : \"dirty/dbType\" : \"cassandra/g' settings.json
+RUN sed -i -e 's/"filename" : "var\/dirty.db"/"clientOptions": {"keyspace": "etherpad", "port": "9160", "contactPoints": ["oae-cassandra"]},"columnFamily": "Etherpad"/g' settings.json
 
 RUN sed -i -e 's/defaultPadText" : ".*"/defaultPadText" : ""/g' settings.json
 RUN echo "13SirapH8t3kxUh5T5aqWXhXahMzoZRA" > APIKEY.txt
+
+# We need to run a specific cqlsh command before this works
+RUN pip install cqlsh==4.0.1
+RUN echo "CREATE KEYSPACE etherpad WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1};" > /tmp/.create_etherpad_keyspace.cql3
 
 # Install ep_headings module
 RUN cd /opt/etherpad && npm install ep_headings
@@ -152,7 +157,9 @@ EXPOSE 9001
 
 RUN groupadd --gid 1001 etherpad && useradd --uid 1001 --gid etherpad --shell /bin/bash --create-home etherpad
 
-CMD ["bin/run.sh", "--root"]
+CMD cqlsh -f /tmp/.create_etherpad_keyspace.cql3 oae-cassandra 9160 && bin/run.sh --root
+# CMD ["bin/run.sh", "--root"]
 
 # TODO try to run this as non-root if possible
 # CMD ["su", "-", "etherpad", "-c", "/bin/sh /opt/etherpad/bin/run.sh"]
+
