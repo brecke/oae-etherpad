@@ -123,13 +123,13 @@ RUN /opt/etherpad/bin/installDeps.sh
 
 # Next two lines are production config ONLY
 RUN sed -i -e 's/dbType\" : \"dirty/dbType\" : \"cassandra/g' settings.json
-RUN sed -i -e 's/"filename" : "var\/dirty.db"/"clientOptions": {"keyspace": "etherpad", "port": "9160", "contactPoints": ["oae-cassandra"]},"columnFamily": "Etherpad"/g' settings.json
+RUN sed -i -e 's/"filename" : "var\/dirty.db"/"clientOptions": {"keyspace": "etherpad", "port": "9042", "contactPoints": ["oae-cassandra"]},"columnFamily": "Etherpad"/g' settings.json
 
 RUN sed -i -e 's/defaultPadText" : ".*"/defaultPadText" : ""/g' settings.json
 RUN echo "13SirapH8t3kxUh5T5aqWXhXahMzoZRA" > APIKEY.txt
 
 # We need to run a specific cqlsh command before this works
-RUN pip install cqlsh==4.0.1
+RUN pip install cqlsh
 RUN echo "CREATE KEYSPACE etherpad WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1};" > /tmp/.create_etherpad_keyspace.cql3
 
 # Install ep_headings module
@@ -157,7 +157,7 @@ EXPOSE 9001
 
 RUN groupadd --gid 1001 etherpad && useradd --uid 1001 --gid etherpad --shell /bin/bash --create-home etherpad
 
-CMD cqlsh -f /tmp/.create_etherpad_keyspace.cql3 oae-cassandra 9160 && bin/run.sh --root
+CMD cqlsh -f /tmp/.create_etherpad_keyspace.cql3 oae-cassandra 9042 && bin/run.sh --root
 # CMD ["bin/run.sh", "--root"]
 
 # TODO try to run this as non-root if possible
