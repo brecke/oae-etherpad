@@ -23,7 +23,7 @@
 #
 
 FROM node:6.12.0-alpine
-LABEL Name=AlpineDockerEtherpad
+LABEL Name=OAE-Etherpad
 LABEL Author=ApereoFoundation 
 LABEL Email=oae@apereo.org
 
@@ -48,13 +48,7 @@ RUN chmod +x /entrypoint.sh \
     && ${ETHERPAD_PATH}/bin/installDeps.sh \
     && rm -rf /tmp/*
 COPY settings.json /opt/etherpad/settings.json
-# RUN mv ${ETHERPAD_PATH}/settings.json.template ${ETHERPAD_PATH}/settings.json
 RUN chown -R etherpad:etherpad ${ETHERPAD_PATH}
-
-# Next two lines are production config ONLY
-# RUN sed -i -e 's/defaultPadText" : ".*"/defaultPadText" : ""/g' ${ETHERPAD_PATH}/settings.json
-# RUN sed -i -e 's/dbType\" : \"dirty/dbType\" : \"cassandra/g' ${ETHERPAD_PATH}/settings.json
-# RUN sed -i -e 's/"filename" : "var\/dirty.db"/"clientOptions": {"keyspace": "etherpad", "port": 9160, "contactPoints": ["oae-cassandra"]},"columnFamily": "Etherpad"/g' ${ETHERPAD_PATH}/settings.json
 
 # Install ep_headings module
 RUN cd ${ETHERPAD_PATH} && npm install ep_headings
@@ -65,20 +59,9 @@ RUN cd ${ETHERPAD_PATH}/node_modules \
   && cd ep_oae \
   && npm install
 
-# Not strictly necessary if we're using default IP and port
-# RUN sed -i -e '/defaultPadText/a \
-  # "ep_oae": {"mq": { "host": "oae-rabbitmq", "port": 5672 } },' ${ETHERPAD_PATH}/settings.json
-
 # CSS changes
 RUN rm ${ETHERPAD_PATH}/node_modules/ep_headings/templates/editbarButtons.ejs && cp ${ETHERPAD_PATH}/node_modules/ep_oae/static/templates/editbarButtons.ejs ${ETHERPAD_PATH}/node_modules/ep_headings/templates/editbarButtons.ejs
 RUN rm ${ETHERPAD_PATH}/src/static/custom/pad.css && cp ${ETHERPAD_PATH}/node_modules/ep_oae/static/css/pad.css ${ETHERPAD_PATH}/src/static/custom/pad.css
-
-# Edit protocols in config
-# RUN sed -i -e 's/\["xhr-polling", "jsonp-polling", "htmlfile"\],/\["websocket", "xhr-polling", "jsonp-polling", "htmlfile"\],/g' ${ETHERPAD_PATH}/settings.json
-
-# Edit toolbar in config
-# RUN sed -i -e '/"loadTest/a \
-  # "toolbar": {"left": [["bold", "italic", "underline", "strikethrough", "orderedlist", "unorderedlist", "indent", "outdent"]],"right": [["showusers"]]},' ${ETHERPAD_PATH}/settings.json
 
 # We need to run a specific cqlsh command before this works
 RUN apk --no-cache add python py-pip git bash
