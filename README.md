@@ -1,13 +1,13 @@
-# oae-etherpad
+# Etherpad docker image
 
-Adapted version of etherpad-lite integrated in OAE project
+Adapted version of etherpad-lite for OAE.
 
 ## Usage
 
 ### Run from dockerhub
 
 ```
-docker run -it --name=etherpad --net=host oaeproject/oae-etherpad
+docker run -it --name=etherpad --net=host oaeproject/oae-etherpad-docker
 ```
 
 ### Build the image locally
