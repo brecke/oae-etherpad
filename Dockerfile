@@ -22,7 +22,6 @@
 # $ docker run -it --name=etherpad --net=host oae-etherpad:latest
 #
 
-# FROM alpine:3.6
 FROM node:6.12.0-alpine
 LABEL Name=AlpineDockerEtherpad
 LABEL Author=ApereoFoundation 
@@ -48,15 +47,14 @@ RUN chmod +x /entrypoint.sh \
     && sed -i -e '96 s,if.*,if [ "${VERSION#v}" = "$NEEDED_VERSION" ]; then,' ${ETHERPAD_PATH}/bin/installDeps.sh \
     && ${ETHERPAD_PATH}/bin/installDeps.sh \
     && rm -rf /tmp/*
-# COPY settings.json /opt/etherpad/settings.json
-RUN mv ${ETHERPAD_PATH}/settings.json.template ${ETHERPAD_PATH}/settings.json
-COPY init.cql ${ETHERPAD_PATH}/init.cql
+COPY settings.json /opt/etherpad/settings.json
+# RUN mv ${ETHERPAD_PATH}/settings.json.template ${ETHERPAD_PATH}/settings.json
 RUN chown -R etherpad:etherpad ${ETHERPAD_PATH}
 
 # Next two lines are production config ONLY
-RUN sed -i -e 's/defaultPadText" : ".*"/defaultPadText" : ""/g' ${ETHERPAD_PATH}/settings.json
-RUN sed -i -e 's/dbType\" : \"dirty/dbType\" : \"cassandra/g' ${ETHERPAD_PATH}/settings.json
-RUN sed -i -e 's/"filename" : "var\/dirty.db"/"clientOptions": {"keyspace": "etherpad", "port": 9160, "contactPoints": ["oae-cassandra"]},"columnFamily": "Etherpad"/g' ${ETHERPAD_PATH}/settings.json
+# RUN sed -i -e 's/defaultPadText" : ".*"/defaultPadText" : ""/g' ${ETHERPAD_PATH}/settings.json
+# RUN sed -i -e 's/dbType\" : \"dirty/dbType\" : \"cassandra/g' ${ETHERPAD_PATH}/settings.json
+# RUN sed -i -e 's/"filename" : "var\/dirty.db"/"clientOptions": {"keyspace": "etherpad", "port": 9160, "contactPoints": ["oae-cassandra"]},"columnFamily": "Etherpad"/g' ${ETHERPAD_PATH}/settings.json
 
 # Install ep_headings module
 RUN cd ${ETHERPAD_PATH} && npm install ep_headings
@@ -68,36 +66,31 @@ RUN cd ${ETHERPAD_PATH}/node_modules \
   && npm install
 
 # Not strictly necessary if we're using default IP and port
-RUN sed -i -e '/defaultPadText/a \
-  "ep_oae": {"mq": { "host": "oae-rabbitmq", "port": 5672 } },' ${ETHERPAD_PATH}/settings.json
+# RUN sed -i -e '/defaultPadText/a \
+  # "ep_oae": {"mq": { "host": "oae-rabbitmq", "port": 5672 } },' ${ETHERPAD_PATH}/settings.json
 
 # CSS changes
 RUN rm ${ETHERPAD_PATH}/node_modules/ep_headings/templates/editbarButtons.ejs && cp ${ETHERPAD_PATH}/node_modules/ep_oae/static/templates/editbarButtons.ejs ${ETHERPAD_PATH}/node_modules/ep_headings/templates/editbarButtons.ejs
 RUN rm ${ETHERPAD_PATH}/src/static/custom/pad.css && cp ${ETHERPAD_PATH}/node_modules/ep_oae/static/css/pad.css ${ETHERPAD_PATH}/src/static/custom/pad.css
 
 # Edit protocols in config
-RUN sed -i -e 's/\["xhr-polling", "jsonp-polling", "htmlfile"\],/\["websocket", "xhr-polling", "jsonp-polling", "htmlfile"\],/g' ${ETHERPAD_PATH}/settings.json
+# RUN sed -i -e 's/\["xhr-polling", "jsonp-polling", "htmlfile"\],/\["websocket", "xhr-polling", "jsonp-polling", "htmlfile"\],/g' ${ETHERPAD_PATH}/settings.json
 
 # Edit toolbar in config
-RUN sed -i -e '/"loadTest/a \
-  "toolbar": {"left": [["bold", "italic", "underline", "strikethrough", "orderedlist", "unorderedlist", "indent", "outdent"]],"right": [["showusers"]]},' ${ETHERPAD_PATH}/settings.json
-
+# RUN sed -i -e '/"loadTest/a \
+  # "toolbar": {"left": [["bold", "italic", "underline", "strikethrough", "orderedlist", "unorderedlist", "indent", "outdent"]],"right": [["showusers"]]},' ${ETHERPAD_PATH}/settings.json
 
 # We need to run a specific cqlsh command before this works
 RUN apk --no-cache add python py-pip git bash
 RUN pip install cqlsh==4.0.1
 RUN pip install thrift==0.9.3
-RUN echo "CREATE KEYSPACE IF NOT EXISTS etherpad WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1};" > ${ETHERPAD_PATH}/init.cql
+RUN echo "CREATE KEYSPACE IF NOT EXISTS \"etherpad\" WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1};" \
+  >> ${ETHERPAD_PATH}/init.cql \
+  && chown etherpad:etherpad ${ETHERPAD_PATH}/init.cql
 
-# miguel addon
-# USER etherpad
-
-# debug and experimental
+# Must add the same key as config.js
 RUN echo "13SirapH8t3kxUh5T5aqWXhXahMzoZRA" > ${ETHERPAD_PATH}/APIKEY.txt
 
 EXPOSE 9001
-# ENTRYPOINT ["/bin/bash", "/entrypoint.sh"]
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["/opt/etherpad/bin/run.sh"]
-# CMD cqlsh -f ${ETHERPAD_PATH}/init.cql oae-cassandra 9160 && ${ETHERPAD_PATH}/bin/run.sh 
-# CMD ["cqlsh",  "-f", "/opt/etherpad/init.cql", "oae-cassandra", "9160", "&&", "${ETHERPAD_PATH}/bin/run.sh"]
