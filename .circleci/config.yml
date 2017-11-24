@@ -1,0 +1,8 @@
+version: 2
+jobs:
+  build:
+    machine: true
+    working_directory: ~/oae-etherpad-docker
+    steps:
+      - checkout
+      - run: docker build -f Dockerfile -t oae-etherpad-docker .
