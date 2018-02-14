@@ -24,13 +24,13 @@
 
 FROM node:6.12.0-alpine
 LABEL Name=OAE-Etherpad
-LABEL Author=ApereoFoundation 
+LABEL Author=ApereoFoundation
 LABEL Email=oae@apereo.org
 
 #
 # Install etherpad
 #
-ENV ETHERPAD_VERSION 1.6.2
+ENV ETHERPAD_VERSION 1.6.3
 ENV ETHERPAD_PATH /opt/etherpad
 
 COPY entrypoint.sh /entrypoint.sh
@@ -52,6 +52,13 @@ RUN chown -R etherpad:etherpad ${ETHERPAD_PATH}
 
 # Install ep_headings module
 RUN cd ${ETHERPAD_PATH} && npm install ep_headings
+
+# Install ep_comments module
+RUN cd ${ETHERPAD_PATH} \
+  && npm install ep_page_view \
+  && git clone https://github.com/JohnMcLear/ep_comments.git node_modules/ep_comments_page \
+  && cd node_modules/ep_comments_page \
+  && npm install
 
 # Etherpad OAE plugin
 RUN cd ${ETHERPAD_PATH}/node_modules \

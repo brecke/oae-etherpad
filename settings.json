@@ -101,24 +101,24 @@
   /* Users, who have a valid session, automatically get granted access to password protected pads */
   "sessionNoPassword": false,
   /* if true, all css & js will be minified before sending to the client. This will improve the loading performance massivly,
-     but makes it impossible to debug the javascript/css */
+    but makes it impossible to debug the javascript/css */
   "minify": true,
   /* How long may clients use served javascript code (in seconds)? Without versioning this
-     may cause problems during deployment. Set to 0 to disable caching */
+    may cause problems during deployment. Set to 0 to disable caching */
   "maxAge": 21600, // 60 * 60 * 6 = 6 hours
   /* This is the absolute path to the Abiword executable. Setting it to null, disables abiword.
-     Abiword is needed to advanced import/export features of pads*/
+    Abiword is needed to advanced import/export features of pads*/
   "abiword": null,
   /* This is the absolute path to the soffice executable. Setting it to null, disables LibreOffice exporting.
-     LibreOffice can be used in lieu of Abiword to export pads */
+    LibreOffice can be used in lieu of Abiword to export pads */
   "soffice": null,
   /* This is the path to the Tidy executable. Setting it to null, disables Tidy.
-     Tidy is used to improve the quality of exported pads*/
+    Tidy is used to improve the quality of exported pads*/
   "tidyHtml": null,
   /* Allow import of file types other than the supported types: txt, doc, docx, rtf, odt, html & htm */
   "allowUnknownFileEnds": true,
   /* This setting is used if you require authentication of all users.
-     Note: /admin always requires authentication. */
+    Note: /admin always requires authentication. */
   "requireAuthentication": false,
   /* Require authorization by a module, or a user with is_admin set, see below. */
   "requireAuthorization": false,
@@ -127,10 +127,38 @@
   /* Privacy: disable IP logging */
   "disableIPlogging": false,
   /* Time (in seconds) to automatically reconnect pad when a "Force reconnect"
-     message is shown to user. Set to 0 to disable automatic reconnection */
+    message is shown to user. Set to 0 to disable automatic reconnection */
   "automaticReconnectionTimeout": 0,
+  /*
+  * By default, when caret is moved out of viewport, it scrolls the minimum height needed to make this
+  * line visible.
+  */
+  "scrollWhenFocusLineIsOutOfViewport":{
+    /*
+    * Percentage of viewport height to be additionally scrolled.
+    * E.g use "percentage.editionAboveViewport": 0.5, to place caret line in the
+    * middle of viewport, when user edits a line above of the viewport
+    * Set to 0 to disable extra scrolling
+    */
+    "percentage":{
+      "editionAboveViewport":0,
+      "editionBelowViewport":0
+    },
+    /* Time (in milliseconds) used to animate the scroll transition. Set to 0 to disable animation */
+    "duration":0,
+    /*
+    * Flag to control if it should scroll when user places the caret in the last line of the viewport
+    */
+    "scrollWhenCaretIsInTheLastLineOfViewport":false,
+    /*
+    * Percentage of viewport height to be additionally scrolled when user presses arrow up
+    * in the line of the top of the viewport.
+    * Set to 0 to let the scroll to be handled as default by the Etherpad
+    */
+    "percentageToScrollWhenUserPressesArrowUp":0
+  },
   /* Users for basic authentication. is_admin = true gives access to /admin.
-     If you do not uncomment this, /admin will not be available! */
+    If you do not uncomment this, /admin will not be available! */
   /*
   "users": {
     "admin": {
@@ -236,5 +264,9 @@
           }
         }*/
     ]
+  },
+  // Display comments as icons, not boxes
+  "ep_comments_page":{
+    "displayCommentAsIcon":true
   }
 }
