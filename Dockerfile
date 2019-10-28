@@ -22,7 +22,7 @@
 # $ docker run -it --name=etherpad --net=host oae-etherpad:latest
 #
 
-FROM node:6.12.0-alpine
+FROM node:10-alpine
 LABEL Name=OAE-Etherpad
 LABEL Author=ApereoFoundation
 LABEL Email=oae@apereo.org
