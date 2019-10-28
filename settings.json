@@ -38,9 +38,7 @@
     "clientOptions": {
       "keyspace": "etherpad",
       "port": 9160,
-      "contactPoints": [
-        "oae-cassandra"
-      ]
+      "contactPoints": ["oae-cassandra"]
     },
     "columnFamily": "Etherpad"
   },
@@ -49,8 +47,10 @@
   "defaultPadText": "",
   "ep_oae": {
     "mq": {
-      "host": "oae-rabbitmq",
-      "port": 5672
+      "host": "oae-redis",
+      "port": 6379,
+      "dbIndex": 0,
+      "pass": ""
     }
   },
   /* Default Pad behavior, users can override by changing */
@@ -69,26 +69,26 @@
   },
   /* Pad Shortcut Keys */
   "padShortcutEnabled": {
-    "altF9": true, /* focus on the File Menu and/or editbar */
-    "altC": true, /* focus on the Chat window */
-    "cmdShift2": true, /* shows a gritter popup showing a line author */
+    "altF9": true /* focus on the File Menu and/or editbar */,
+    "altC": true /* focus on the Chat window */,
+    "cmdShift2": true /* shows a gritter popup showing a line author */,
     "delete": true,
     "return": true,
-    "esc": true, /* in mozilla versions 14-19 avoid reconnecting pad */
-    "cmdS": true, /* save a revision */
-    "tab": true, /* indent */
-    "cmdZ": true, /* undo/redo */
-    "cmdY": true, /* redo */
-    "cmdI": true, /* italic */
-    "cmdB": true, /* bold */
-    "cmdU": true, /* underline */
-    "cmd5": true, /* strike through */
-    "cmdShiftL": true, /* unordered list */
-    "cmdShiftN": true, /* ordered list */
-    "cmdShift1": true, /* ordered list */
-    "cmdShiftC": true, /* clear authorship */
-    "cmdH": true, /* backspace */
-    "ctrlHome": true, /* scroll to top of pad */
+    "esc": true /* in mozilla versions 14-19 avoid reconnecting pad */,
+    "cmdS": true /* save a revision */,
+    "tab": true /* indent */,
+    "cmdZ": true /* undo/redo */,
+    "cmdY": true /* redo */,
+    "cmdI": true /* italic */,
+    "cmdB": true /* bold */,
+    "cmdU": true /* underline */,
+    "cmd5": true /* strike through */,
+    "cmdShiftL": true /* unordered list */,
+    "cmdShiftN": true /* ordered list */,
+    "cmdShift1": true /* ordered list */,
+    "cmdShiftC": true /* clear authorship */,
+    "cmdH": true /* backspace */,
+    "ctrlHome": true /* scroll to top of pad */,
     "pageUp": true,
     "pageDown": true
   },
@@ -130,32 +130,32 @@
     message is shown to user. Set to 0 to disable automatic reconnection */
   "automaticReconnectionTimeout": 0,
   /*
-  * By default, when caret is moved out of viewport, it scrolls the minimum height needed to make this
-  * line visible.
-  */
-  "scrollWhenFocusLineIsOutOfViewport":{
+   * By default, when caret is moved out of viewport, it scrolls the minimum height needed to make this
+   * line visible.
+   */
+  "scrollWhenFocusLineIsOutOfViewport": {
     /*
-    * Percentage of viewport height to be additionally scrolled.
-    * E.g use "percentage.editionAboveViewport": 0.5, to place caret line in the
-    * middle of viewport, when user edits a line above of the viewport
-    * Set to 0 to disable extra scrolling
-    */
-    "percentage":{
-      "editionAboveViewport":0,
-      "editionBelowViewport":0
+     * Percentage of viewport height to be additionally scrolled.
+     * E.g use "percentage.editionAboveViewport": 0.5, to place caret line in the
+     * middle of viewport, when user edits a line above of the viewport
+     * Set to 0 to disable extra scrolling
+     */
+    "percentage": {
+      "editionAboveViewport": 0,
+      "editionBelowViewport": 0
     },
     /* Time (in milliseconds) used to animate the scroll transition. Set to 0 to disable animation */
-    "duration":0,
+    "duration": 0,
     /*
-    * Flag to control if it should scroll when user places the caret in the last line of the viewport
-    */
-    "scrollWhenCaretIsInTheLastLineOfViewport":false,
+     * Flag to control if it should scroll when user places the caret in the last line of the viewport
+     */
+    "scrollWhenCaretIsInTheLastLineOfViewport": false,
     /*
-    * Percentage of viewport height to be additionally scrolled when user presses arrow up
-    * in the line of the top of the viewport.
-    * Set to 0 to let the scroll to be handled as default by the Etherpad
-    */
-    "percentageToScrollWhenUserPressesArrowUp":0
+     * Percentage of viewport height to be additionally scrolled when user presses arrow up
+     * in the line of the top of the viewport.
+     * Set to 0 to let the scroll to be handled as default by the Etherpad
+     */
+    "percentageToScrollWhenUserPressesArrowUp": 0
   },
   /* Users for basic authentication. is_admin = true gives access to /admin.
     If you do not uncomment this, /admin will not be available! */
@@ -193,11 +193,7 @@
         "outdent"
       ]
     ],
-    "right": [
-      [
-        "showusers"
-      ]
-    ]
+    "right": [["showusers"]]
   },
   // Disable indentation on new line when previous line ends with some special chars (':', '[', '(', '{')
   /*
@@ -266,7 +262,7 @@
     ]
   },
   // Display comments as icons, not boxes
-  "ep_comments_page":{
-    "displayCommentAsIcon":true
+  "ep_comments_page": {
+    "displayCommentAsIcon": true
   }
 }
