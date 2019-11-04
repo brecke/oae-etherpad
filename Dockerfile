@@ -70,17 +70,14 @@ RUN cd ${ETHERPAD_PATH}/node_modules \
 RUN rm ${ETHERPAD_PATH}/node_modules/ep_headings/templates/editbarButtons.ejs && cp ${ETHERPAD_PATH}/node_modules/ep_oae/static/templates/editbarButtons.ejs ${ETHERPAD_PATH}/node_modules/ep_headings/templates/editbarButtons.ejs
 RUN rm ${ETHERPAD_PATH}/src/static/custom/pad.css && cp ${ETHERPAD_PATH}/node_modules/ep_oae/static/css/pad.css ${ETHERPAD_PATH}/src/static/custom/pad.css
 
-# We need to run a specific cqlsh command before this works
-RUN apk --no-cache add python py-pip git bash
-RUN pip install cqlsh==4.0.1
-RUN pip install thrift==0.9.3
-RUN echo "CREATE KEYSPACE IF NOT EXISTS \"etherpad\" WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1};" \
-  >> ${ETHERPAD_PATH}/init.cql \
-  && chown etherpad:etherpad ${ETHERPAD_PATH}/init.cql
-
 # Must add the same key as config.js
 RUN echo "13SirapH8t3kxUh5T5aqWXhXahMzoZRA" > ${ETHERPAD_PATH}/APIKEY.txt
+RUN echo "cocoxixi" > ${ETHERPAD_PATH}/SESSIONKEY.txt
+RUN npm install --global pm2
 
 EXPOSE 9001
-ENTRYPOINT ["/entrypoint.sh"]
-CMD ["/opt/etherpad/bin/run.sh"]
+RUN chown -R etherpad:etherpad ${ETHERPAD_PATH}/settings.json ${ETHERPAD_PATH}/var
+RUN chmod 755 ${ETHERPAD_PATH}/settings.json
+
+# Running with PM2
+CMD ["sh", "-c", "cd ${ETHERPAD_PATH} && pm2 start --restart-delay=3000 node_modules/ep_etherpad-lite/node/server.js && pm2 logs"]
