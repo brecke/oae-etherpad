@@ -47,37 +47,44 @@ RUN chmod +x /entrypoint.sh \
     && sed -i -e '96 s,if.*,if [ "${VERSION#v}" = "$NEEDED_VERSION" ]; then,' ${ETHERPAD_PATH}/bin/installDeps.sh \
     && ${ETHERPAD_PATH}/bin/installDeps.sh \
     && rm -rf /tmp/*
-COPY settings.json /opt/etherpad/settings.json
-RUN chown -R etherpad:etherpad ${ETHERPAD_PATH}
+
+# Set workdir for all commands below
+WORKDIR ${ETHERPAD_PATH}
+
+COPY settings.json settings.json
+RUN chown -R etherpad:etherpad .
 
 # Install ep_headings module
-RUN cd ${ETHERPAD_PATH} && npm install ep_headings
+RUN npm install ep_headings
 
 # Install ep_comments module
-RUN cd ${ETHERPAD_PATH} \
-  && npm install ep_page_view \
+RUN npm install ep_page_view \
   && git clone https://github.com/oaeproject/ep_comments.git node_modules/ep_comments_page \
   && cd node_modules/ep_comments_page \
   && npm install
 
 # Etherpad OAE plugin
-RUN cd ${ETHERPAD_PATH}/node_modules \
+RUN cd node_modules \
   && git clone https://github.com/oaeproject/ep_oae \
   && cd ep_oae \
   && npm install
 
 # CSS changes
-RUN rm ${ETHERPAD_PATH}/node_modules/ep_headings/templates/editbarButtons.ejs && cp ${ETHERPAD_PATH}/node_modules/ep_oae/static/templates/editbarButtons.ejs ${ETHERPAD_PATH}/node_modules/ep_headings/templates/editbarButtons.ejs
-RUN rm ${ETHERPAD_PATH}/src/static/custom/pad.css && cp ${ETHERPAD_PATH}/node_modules/ep_oae/static/css/pad.css ${ETHERPAD_PATH}/src/static/custom/pad.css
+RUN rm node_modules/ep_headings/templates/editbarButtons.ejs && cp node_modules/ep_oae/static/templates/editbarButtons.ejs node_modules/ep_headings/templates/editbarButtons.ejs
+RUN rm src/static/custom/pad.css && cp node_modules/ep_oae/static/css/pad.css src/static/custom/pad.css
 
 # Must add the same key as config.js
-RUN echo "13SirapH8t3kxUh5T5aqWXhXahMzoZRA" > ${ETHERPAD_PATH}/APIKEY.txt
-RUN echo "cocoxixi" > ${ETHERPAD_PATH}/SESSIONKEY.txt
+RUN echo "13SirapH8t3kxUh5T5aqWXhXahMzoZRA" > APIKEY.txt
+RUN echo "cocoxixi" > SESSIONKEY.txt
+
+# Install PM2
 RUN npm install --global pm2
 
+# Set the right permissions
+RUN chown -R etherpad:etherpad settings.json var
+RUN chmod 755 settings.json
+
 EXPOSE 9001
-RUN chown -R etherpad:etherpad ${ETHERPAD_PATH}/settings.json ${ETHERPAD_PATH}/var
-RUN chmod 755 ${ETHERPAD_PATH}/settings.json
 
 # Running with PM2
-CMD ["sh", "-c", "cd ${ETHERPAD_PATH} && pm2 start --restart-delay=3000 node_modules/ep_etherpad-lite/node/server.js && pm2 logs"]
+CMD ["sh", "-c", "pm2 start --restart-delay=3000 node_modules/ep_etherpad-lite/node/server.js && pm2 logs"]
